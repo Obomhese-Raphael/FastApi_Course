@@ -6,6 +6,8 @@ from pydantic import BaseModel
 # Creating an instance of the FastAPI class
 app = FastAPI()
 
+# Students data stored in a dictionary, where the key is the student ID and the value is another dictionary containing the student's name, age, and year.
+# This serves as a simple in-memory database for demonstration purposes.
 students = {
     1: {"name": "John", "age": 20, "year": "Year 12"},
     2: {"name": "Jane", "age": 22, "year": "Year 12"},
@@ -33,12 +35,16 @@ class UpdateStudent(BaseModel):
 
 # Creating an endpoint for the root URL
 
+# GET method
+
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
 # Creating an endpoint to get a student by ID
+
+# GET all students
 
 
 @app.get("/get-students")
@@ -52,6 +58,9 @@ def get_students():
 # The Path function is used to provide additional metadata about the parameter, such as a description.
 def get_student(student_id: int = Path(..., description="The ID of the student to retrieve")):
     return students.get(student_id, {"error": "Student not found"})
+
+# Get a student by their name using query parameters.
+# The name parameter is optional, and if it is not provided, the endpoint will return all students. If a name is provided, the endpoint will search for a student with that name and return their information. If no student is found with the provided name, an error message will be returned.
 
 
 @app.get("/get-by-name")
@@ -110,3 +119,13 @@ def update_student(student_id: int, student: UpdateStudent):
         students[student_id][field] = value
 
     return {"message": "Student updated successfully", "student": students[student_id]}
+
+
+# Deleting a student by their ID using a DELETE request. The student_id is provided as a path parameter, and the function checks if the student exists in the students dictionary. If the student is found, it is removed from the dictionary, and a success message is returned. If the student is not found, an error message is returned.
+@app.delete("/delete-student/{student_id}")
+def delete_student(student_id: int):
+    if student_id not in students:
+        return {"error": "Student not found"}
+
+    del students[student_id]
+    return {"message": "Student deleted successfully"}
