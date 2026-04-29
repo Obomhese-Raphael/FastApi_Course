@@ -25,6 +25,12 @@ class Student(BaseModel):
     age: int
     year: str
 
+
+class UpdateStudent(BaseModel):
+    name: Optional[str] = None
+    age: Optional[int] = None
+    year: Optional[str] = None
+
 # Creating an endpoint for the root URL
 
 
@@ -86,3 +92,21 @@ def create_student(student_id: int, student: Student):
     # If the student ID does not exist, add the new student to the students dictionary using the student_id as the key and the student data as the value.
     students[student_id] = student.model_dump()
     return {"message": "Student created successfully", "student": students[student_id]}
+
+
+# PUT METHOD TO UPDATE A STUDENT
+@app.put("/update-student/{student_id}")
+# Defining a function that takes the student_id as a path parameter and an UpdateStudent object in the request body.
+def update_student(student_id: int, student: UpdateStudent):
+    # Checking if the student ID exists in the students dictionary. If it does not, return an error message.
+    if student_id not in students:
+        return {"error": "Student not found"}
+
+    # Update only the fields that were actually provided in the request
+    update_data = student.model_dump(exclude_unset=True)  # Key change here
+
+    # Iterating over the update_data dictionary and updating the corresponding fields in the students dictionary for the specified student_id.
+    for field, value in update_data.items():
+        students[student_id][field] = value
+
+    return {"message": "Student updated successfully", "student": students[student_id]}
